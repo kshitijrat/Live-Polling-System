@@ -1,53 +1,94 @@
-// Basic Express server with Socket.IO and MongoDB
-const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-const cors = require('cors');
+import express from "express";
+import http from "http";
+import cors from "cors";
+import { Server } from "socket.io";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import socketHandler from "./socket.js";
+import Poll from "./models/Poll.js";
+import Response from "./models/Response.js";
 
-// Load environment variables from .env file
-require('dotenv').config();
+dotenv.config();
 
-// initialize express app
 const app = express();
-
-// create http server
 const server = http.createServer(app);
 
-// upgrade the server to websocket
-const FRONTEND_URL = process.env.FRONTEND_URL || '*';
-const io = new Server(server, {
-  cors: {
-    origin: FRONTEND_URL,
-    methods: ['GET', 'POST']
-  }
-});
-
-// Middleware
+// Enable CORS for frontend access
 app.use(cors());
 app.use(express.json());
 
-// Import MongoDB connection utility
-const connectToDB = require('./utils/database');
+// Create the Socket.IO server
+const io = new Server(server, {
+    cors: {
+        origin: "*", // You can restrict this to your frontend domain in production
+        methods: ["GET", "POST"]
+    }
+});
 
-// Import poll history routes
-const historyRoutes = require('./routes/history');
+// MongoDB connection
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log("✅ MongoDB connected successfully"))
+    .catch((err) => console.error("❌ MongoDB error:", err));
 
-// Import Socket.IO polling logic
-const pollSocket = require('./socket/pollSocket');
+// Socket.IO logic
+io.on("connection", (socket) => {
+    console.log("🟢 Client connected:", socket.id);
+    socketHandler(socket, io);
+});
 
-// Connect to MongoDB
-(async () => {
-  await connectToDB();
-})();
+// Basic test route
+app.get("/", (req, res) => {
+    res.send("🎉 Polling server is running!");
+});
 
-// Use poll history routes
-app.use('/history', historyRoutes);
+// GET /api/polls/history
+app.get("/api/polls/history", async (req, res) => {
+    try {
+        const polls = await Poll.find().sort({ createdAt: -1 });
+        const responses = await Response.find();
 
-// Set up Socket.IO polling logic
-pollSocket(io);
+        const history = polls.map((poll) => {
+            const pollResponses = responses.filter(
+                (r) => r.pollId?.toString() === poll._id.toString()
+            );
 
-// Start the server
+            const optionCounts = poll.options.map((option) => {
+                const count = pollResponses.filter(
+                    (r) =>
+                        r.selectedOption &&
+                        r.selectedOption.toString() === option._id.toString()
+                ).length;
+
+                return {
+                    _id: option._id,
+                    text: option.text,
+                    isCorrect: option.isCorrect,
+                    count,
+                };
+            });
+
+            const totalVotes = optionCounts.reduce((acc, opt) => acc + opt.count, 0);
+
+            return {
+                _id: poll._id,
+                question: poll.text,
+                options: optionCounts.map((opt) => ({
+                    ...opt,
+                    percentage: totalVotes ? Math.round((opt.count / totalVotes) * 100) : 0,
+                })),
+                createdAt: poll.createdAt,
+            };
+        });
+
+        res.json(history);
+    } catch (err) {
+        console.error("Error in /api/polls/history:", err);
+        res.status(500).json({ error: "Failed to fetch poll history" });
+    }
+});
+
+// Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`Server Started at PORT: ${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

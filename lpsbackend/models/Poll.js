@@ -1,22 +1,15 @@
-// models/Poll.js
-// Mongoose model for Polls
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
-const pollSchema = new mongoose.Schema({
-  question: { type: String, required: true },
-  options: [{
+const optionSchema = new mongoose.Schema({
     text: { type: String, required: true },
-    isCorrect: { type: Boolean, default: false }
-  }],
-  answers: [{
-    studentName: String,
-    optionIndex: Number,
-    answeredAt: { type: Date, default: Date.now }
-  }],
-  createdAt: { type: Date, default: Date.now },
-  duration: { type: Number, required: true },
-  endedAt: { type: Date }
+    isCorrect: { type: Boolean, default: false },
 });
 
-const Poll = mongoose.model('Poll', pollSchema);
-module.exports = Poll; 
+const pollSchema = new mongoose.Schema({
+    text: { type: String, required: true },
+    options: [optionSchema],
+    timeLimit: { type: Number, default: 60 },
+    createdAt: { type: Date, default: Date.now },
+});
+
+export default mongoose.model("Poll", pollSchema);
