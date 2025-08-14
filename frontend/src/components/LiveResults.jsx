@@ -8,8 +8,9 @@ const LiveResults = () => {
     const navigate = useNavigate();
     const { poll, timeLimit } = state || {};
 
-    const [timer, setTimer] = useState(timeLimit);
+    const [timer, setTimer] = useState(timeLimit || 60);
     const [results, setResults] = useState(null);
+    const [canAskNew, setCanAskNew] = useState(false);
 
     useEffect(() => {
         let interval = setInterval(() => {
@@ -22,12 +23,19 @@ const LiveResults = () => {
             });
         }, 1000);
 
+        // Listen for live poll results
         socket.on("poll-results", (data) => {
             setResults(data);
         });
 
+        // Listen for poll status (can teacher ask new question)
+        socket.on("poll-status", ({ canAskNew }) => {
+            setCanAskNew(canAskNew);
+        });
+
         return () => {
             socket.off("poll-results");
+            socket.off("poll-status");
             clearInterval(interval);
         };
     }, []);
@@ -40,11 +48,13 @@ const LiveResults = () => {
         );
     }
 
-    const totalVotes = results ? Object.values(results.answers || {}).reduce((a, b) => a + b, 0) : 0;
+    const totalVotes = results
+        ? Object.values(results.answers || {}).reduce((a, b) => a + b, 0)
+        : 0;
 
     return (
         <>
-            <ChatSidebar/>
+            <ChatSidebar />
             <div className="min-h-screen flex items-center p-6 bg-white text-dark">
                 <div className="max-w-6xl w-full mx-auto">
                     <div className="flex justify-between mb-4">
@@ -61,7 +71,8 @@ const LiveResults = () => {
                     <div className="border border-gray-200 rounded-b-md px-4 py-4 bg-white space-y-3">
                         {poll.options.map((opt, index) => {
                             const voteCount = results?.answers?.[opt._id] || 0;
-                            const percent = totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
+                            const percent =
+                                totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
 
                             return (
                                 <div key={opt._id}>
@@ -86,12 +97,14 @@ const LiveResults = () => {
                     </div>
 
                     <div className="mt-6 flex justify-center gap-4">
-                        <button
-                            onClick={() => navigate("/teacher")}
-                            className="bg-primary text-white px-5 py-2 rounded-full font-medium hover:bg-primary/80"
-                        >
-                            + Ask a new question
-                        </button>
+                        {canAskNew && (
+                            <button
+                                onClick={() => navigate("/teacher")}
+                                className="bg-primary text-white px-5 py-2 rounded-full font-medium hover:bg-primary/80"
+                            >
+                                + Ask a new question
+                            </button>
+                        )}
                         <button
                             onClick={() => navigate("/poll-history")}
                             className="bg-purple-400 text-white px-5 py-2 rounded-full font-medium hover:bg-purple-500"

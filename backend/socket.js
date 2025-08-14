@@ -73,6 +73,17 @@ export default function socketHandler(socket, io) {
         io.emit("poll-started", poll);
     });
 
+    async function checkCanAskNew() {
+    const activePoll = await Poll.findOne().sort({ createdAt: -1 });
+    if (!activePoll) return true;
+
+    const responses = await Response.find({ pollId: activePoll._id });
+    const totalStudents = await Student.countDocuments({ isKicked: false });
+
+    return responses.length >= totalStudents;
+}
+
+
     // Student submits answer
     socket.on("submit-answer", async ({ questionId, answer }) => {
         const student = await Student.findOne({ socketId: socket.id });
@@ -104,6 +115,8 @@ export default function socketHandler(socket, io) {
                 result.answers[id] += 1;
             }
         }
+
+        const canAskNew = await checkCanAskNew();
 
         io.emit("poll-results", result);
     });
