@@ -4,6 +4,11 @@ A live interactive polling system for the classroom, where teachers can create p
 
 ## 🚀 Features
 
+
+
+
+
+
 ### For Teachers
 - **Real-time Poll Creation**: Create polls with multiple choice questions and set custom durations
 - **Live Results**: View student responses in real-time with visual progress bars
