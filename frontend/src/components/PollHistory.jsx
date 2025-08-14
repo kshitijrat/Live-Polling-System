@@ -41,6 +41,9 @@ const PollHistory = ({ history }) => {
                                         </div>
                                     </div>
                                 ))}
+                                <p className="text-right text-sm font-medium text-gray-500">
+                                    Total Votes: {totalVotes}
+                                </p>
                             </div>
                         </div>
                     );
