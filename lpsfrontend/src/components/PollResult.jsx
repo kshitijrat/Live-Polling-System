@@ -1,19 +1,22 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function PollResult({
   questionNumber = 1,
   timer = 0,
   question = "",
   options = [],
-  results = [], // array of percentages
-  userType = "student", // "student" or "teacher"
+  results = [], 
+  userType = "student",
   onAskNewQuestion,
-  onViewHistory,
   message = "Wait for the teacher to ask a new question..",
 }) {
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white">
       <div className="w-full max-w-xl mt-4">
+        {/* Top bar */}
         <div className="flex items-center mb-4">
           <span className="font-bold text-lg mr-4">Question {questionNumber}</span>
           <span className="flex items-center text-red-500 font-semibold">
@@ -24,6 +27,8 @@ export default function PollResult({
             00:{timer.toString().padStart(2, '0')}
           </span>
         </div>
+
+        {/* Question */}
         <div className="font-bold text-lg mb-2">Question</div>
         <div className="rounded-lg overflow-hidden border mb-6">
           <div className="bg-gray-800 text-white px-4 py-3 font-semibold">
@@ -49,11 +54,13 @@ export default function PollResult({
             ))}
           </div>
         </div>
+
+        {/* Teacher buttons */}
         {userType === "teacher" ? (
           <div className="flex justify-between mt-6">
             <button
               className="flex items-center gap-2 px-5 py-2 bg-purple-200 text-purple-700 rounded-full font-medium"
-              onClick={onViewHistory}
+              onClick={() => navigate("/history")} // 👈 direct navigate
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -78,4 +85,4 @@ export default function PollResult({
       </div>
     </div>
   );
-} 
+}
