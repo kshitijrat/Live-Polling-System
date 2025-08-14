@@ -74,11 +74,12 @@ const ChatSidebar = () => {
             {open && (
                 <div
                     className="
-                        fixed bottom-20 right-6 md:right-6 
-                        w-full md:w-96 
+                        fixed bottom-20 border right-6 md:right-6 
+                        w-fit md:w-96 
+                        p-3
                         max-h-[80vh] md:max-h-[600px] 
                         bg-white rounded-t-2xl md:rounded-xl 
-                        shadow-2xl border border-gray-200 
+                        shadow-2xl border-gray-200 
                         z-40 flex flex-col animate-slide-in
                         md:bottom-20
                         sm:right-0 sm:bottom-0
@@ -90,8 +91,8 @@ const ChatSidebar = () => {
                             <button
                                 key={tabName}
                                 className={`flex-1 px-4 py-2 text-sm font-medium transition ${tab === tabName
-                                        ? 'bg-purple-100 text-purple-700'
-                                        : 'text-gray-500 hover:bg-gray-100'
+                                    ? 'bg-purple-100 text-purple-700'
+                                    : 'text-gray-500 hover:bg-gray-100'
                                     }`}
                                 onClick={() => setTab(tabName)}
                             >
@@ -116,8 +117,8 @@ const ChatSidebar = () => {
                                                 <div
                                                     key={index}
                                                     className={`max-w-[75%] px-3 py-2 rounded-xl shadow text-sm ${isOwn
-                                                            ? 'bg-purple-600 text-white self-end rounded-br-none'
-                                                            : 'bg-gray-100 text-gray-800 self-start rounded-bl-none'
+                                                        ? 'bg-purple-600 text-white self-end rounded-br-none'
+                                                        : 'bg-gray-100 text-gray-800 self-start rounded-bl-none'
                                                         }`}
                                                 >
                                                     <div className="font-semibold text-xs mb-1">
