@@ -9,25 +9,24 @@ export default function StudentPage() {
     sessionStorage.getItem("studentName") || ""
   );
   const [input, setInput] = useState("");
-  const [pollState, setPollState] = useState("waiting"); // "waiting" | "active" | "result"
-  const [pollData, setPollData] = useState(null); // { question, options, duration, ... }
+  const [pollState, setPollState] = useState("waiting");
+  const [pollData, setPollData] = useState(null);
   const [selected, setSelected] = useState(null);
   const [timer, setTimer] = useState(0);
-  const [results, setResults] = useState([]); // percentages
+  const [results, setResults] = useState([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   const pollHistoryButton = location.pathname !== "/history" && (
     <button
-      className="fixed top-8 right-8 bg-purple-200 text-purple-700 px-6 py-3 rounded-full font-medium shadow hover:bg-purple-300 z-50"
+      className="fixed top-4 right-4 sm:top-8 sm:right-8 bg-gradient-to-r from-purple-400 to-blue-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium shadow hover:from-purple-500 hover:to-blue-600 z-50 text-sm sm:text-base"
       onClick={() => navigate("/history")}
     >
       View Poll History
     </button>
   );
 
-  // Handle name entry
   const handleContinue = () => {
     if (input.trim()) {
       sessionStorage.setItem("studentName", input.trim());
@@ -35,7 +34,6 @@ export default function StudentPage() {
     }
   };
 
-  // Socket.IO listeners
   useEffect(() => {
     if (!studentName) return;
     socket.emit("get_current_poll");
@@ -44,21 +42,18 @@ export default function StudentPage() {
       setPollState("active");
       setSelected(null);
       setTimer(data.duration || 60);
-      setHasSubmitted(false); // Reset on new poll
+      setHasSubmitted(false);
     });
     socket.on("poll_ended", (data) => {
       setPollData(data);
       setPollState("result");
-      // Calculate percentages
       const total = data.answers.length || 1;
       const counts = data.options.map((_, i) =>
         data.answers.filter((a) => a.optionIndex === i).length
       );
       setResults(counts.map((c) => Math.round((c / total) * 100)));
     });
-    socket.on("poll_update", (data) => {
-      setPollData(data);
-    });
+    socket.on("poll_update", (data) => setPollData(data));
     return () => {
       socket.off("poll_started");
       socket.off("poll_ended");
@@ -66,10 +61,9 @@ export default function StudentPage() {
     };
   }, [studentName]);
 
-  // Timer for active poll
   useEffect(() => {
     let interval;
-    if (pollState === "active" && pollData && pollData.createdAt && pollData.duration) {
+    if (pollState === "active" && pollData?.createdAt && pollData?.duration) {
       const getTimeLeft = () => {
         const now = Date.now();
         const start = new Date(pollData.createdAt).getTime();
@@ -80,50 +74,43 @@ export default function StudentPage() {
       interval = setInterval(() => {
         const t = getTimeLeft();
         setTimer(t);
-        if (t <= 0) {
-          clearInterval(interval);
-        }
+        if (t <= 0) clearInterval(interval);
       }, 1000);
     }
     return () => clearInterval(interval);
   }, [pollState, pollData]);
 
-  // Handle answer submit
   const handleSubmit = () => {
     if (selected !== null && pollData && !hasSubmitted) {
-      socket.emit("submit_answer", {
-        studentName,
-        optionIndex: selected,
-      });
+      socket.emit("submit_answer", { studentName, optionIndex: selected });
       setHasSubmitted(true);
     }
   };
 
-  // Name entry UI
+  // Name Entry UI
   if (!studentName) {
     return (
       <>
         {pollHistoryButton}
-        <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-white px-4">
           <span className="px-4 py-1 rounded-full bg-purple-200 text-purple-700 text-sm font-medium mb-6 mt-4">
             ✨ Intervue Poll
           </span>
-          <h1 className="text-3xl font-bold mb-2 text-center">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-center">
             Let's <span className="font-extrabold">Get Started</span>
           </h1>
-          <p className="text-gray-500 mb-8 text-center max-w-xl">
-            If you're a student, you'll be able to <span className="font-semibold">submit your answers</span>, participate in live polls, and see how your responses compare with your classmates
+          <p className="text-gray-500 mb-8 text-center max-w-md sm:max-w-xl text-sm sm:text-base">
+            Enter your name to participate in live polls and submit your answers.
           </p>
-          <div className="w-full max-w-md flex flex-col items-center">
-            <label className="mb-2 text-lg font-medium self-start">Enter your Name</label>
+          <div className="w-full max-w-md flex flex-col gap-4">
             <input
-              className="border rounded px-3 py-2 mb-6 w-full bg-gray-100"
+              className="border rounded px-3 py-2 w-full sm:px-4 sm:py-3 bg-gray-100 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-purple-300"
               value={input}
-              onChange={e => setInput(e.target.value)}
+              onChange={(e) => setInput(e.target.value)}
               placeholder="Your Name"
             />
             <button
-              className="bg-gradient-to-r from-purple-500 to-blue-400 text-white px-16 py-3 rounded-full text-lg font-semibold shadow-md hover:from-purple-600 hover:to-blue-500 transition"
+              className="w-full bg-gradient-to-r from-purple-500 to-blue-400 text-white px-4 py-3 rounded-full font-semibold shadow-md hover:from-purple-600 hover:to-blue-500 transition text-sm sm:text-base"
               onClick={handleContinue}
             >
               Continue
@@ -139,39 +126,40 @@ export default function StudentPage() {
     return (
       <>
         {pollHistoryButton}
-        <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-          <span className="px-4 py-1 rounded-full bg-purple-200 text-purple-700 text-sm font-medium mb-6 mt-4">
-            ✨ Intervue Poll
-          </span>
-          <svg className="animate-spin h-12 w-12 text-purple-500 mb-6" viewBox="0 0 24 24">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-white px-4 text-center gap-4">
+          <svg className="animate-spin h-10 w-10 sm:h-12 sm:w-12 text-purple-500" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
           </svg>
-          <h2 className="text-2xl font-semibold text-center">Wait for the teacher to ask questions..</h2>
+          <h2 className="text-lg sm:text-2xl font-semibold">
+            Waiting for the teacher to start the poll...
+          </h2>
         </div>
       </>
     );
   }
 
-  // Active poll UI
+  // Active Poll
   if (pollState === "active") {
     return (
       <>
         {pollHistoryButton}
-        <div className="relative">
+        <div className="relative px-4 sm:px-6">
           <ActivePoll
             questionNumber={1}
             timer={timer}
             question={pollData.question}
-            options={pollData.options.map(opt => opt.text)}
+            options={pollData.options.map((opt) => opt.text)}
             selected={selected}
             onSelect={setSelected}
             onSubmit={handleSubmit}
             userType="student"
           />
           {hasSubmitted && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-white bg-opacity-80 z-10">
-              <span className="text-lg font-semibold text-purple-700">Answer submitted! Waiting for results...</span>
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-white bg-opacity-90 z-10 px-4 text-center">
+              <span className="text-base sm:text-lg font-semibold text-purple-700">
+                Answer submitted! Waiting for results...
+              </span>
             </div>
           )}
         </div>
@@ -179,23 +167,25 @@ export default function StudentPage() {
     );
   }
 
-  // Poll result UI
+  // Poll Result
   if (pollState === "result") {
     return (
       <>
         {pollHistoryButton}
-        <PollResult
-          questionNumber={1}
-          timer={timer}
-          question={pollData.question}
-          options={pollData.options.map(opt => opt.text)}
-          results={results}
-          userType="student"
-          message="Wait for the teacher to ask a new question.."
-        />
+        <div className="px-4 sm:px-6">
+          <PollResult
+            questionNumber={1}
+            timer={timer}
+            question={pollData.question}
+            options={pollData.options.map((opt) => opt.text)}
+            results={results}
+            userType="student"
+            message="Wait for the teacher to ask a new question.."
+          />
+        </div>
       </>
     );
   }
 
   return null;
-} 
+}

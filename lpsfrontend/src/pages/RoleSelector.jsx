@@ -11,8 +11,8 @@ export default function RoleSelector() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-      <span className="px-4 py-1 rounded-full bg-purple-200 text-purple-700 text-sm font-medium mb-6 mt-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-white px-4">
+      <span className="px-4 py-1 rounded-full bg-gradient-to-r from-purple-400 to-purple-600 text-white text-sm font-medium mb-6 mt-4">
         ✨ Intervue Poll
       </span>
       <h1 className="text-3xl font-bold mb-2 text-center">
@@ -21,28 +21,31 @@ export default function RoleSelector() {
       <p className="text-gray-500 mb-8 text-center max-w-xl">
         Please select the role that best describes you to begin using the live polling system
       </p>
-      <div className="flex gap-6 mb-8">
+
+      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mb-8 w-full max-w-2xl">
         <div
-          className={`border-2 rounded-lg p-6 w-64 cursor-pointer transition-all ${selected === 'student' ? 'border-purple-500 shadow-md' : 'border-gray-200'}`}
+          className={`border-2 rounded-lg p-6 flex-1 cursor-pointer transition-all ${selected === 'student' ? 'border-purple-500 shadow-md' : 'border-gray-200'}`}
           onClick={() => setSelected("student")}
         >
           <h2 className="font-bold text-lg mb-2">I’m a Student</h2>
           <p className="text-gray-500 text-sm">Participate in polls and submit your answers.</p>
         </div>
         <div
-          className={`border-2 rounded-lg p-6 w-64 cursor-pointer transition-all ${selected === 'teacher' ? 'border-purple-500 shadow-md' : 'border-gray-200'}`}
+          className={`border-2 rounded-lg p-6 flex-1 cursor-pointer transition-all ${selected === 'teacher' ? 'border-purple-500 shadow-md' : 'border-gray-200'}`}
           onClick={() => setSelected("teacher")}
         >
           <h2 className="font-bold text-lg mb-2">I’m a Teacher</h2>
           <p className="text-gray-500 text-sm">Submit questions and view live poll results in real-time.</p>
         </div>
       </div>
+
       <button
-        className="bg-gradient-to-r from-purple-500 to-blue-400 text-white px-16 py-3 rounded-full text-lg font-semibold shadow-md hover:from-purple-600 hover:to-blue-500 transition"
+        className="bg-gradient-to-r from-purple-500 to-blue-400 text-white px-12 sm:px-16 py-3 rounded-full text-lg font-semibold shadow-md hover:from-purple-600 hover:to-blue-500 transition w-full sm:w-auto max-w-xs"
         onClick={handleContinue}
       >
         Continue
       </button>
     </div>
+
   );
 }

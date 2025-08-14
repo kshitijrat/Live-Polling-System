@@ -5,7 +5,7 @@ let isConnected = false; // track the connection
 const connectToDB = async () => {
   mongoose.set('strictQuery', true);
 
-  console.log("Connecting to MongoDB:", process.env.MONGODB_URI);
+  // console.log("Connecting to MongoDB:", process.env.MONGODB_URI);
 
   if (isConnected) {
     console.log('MongoDB is already connected');
