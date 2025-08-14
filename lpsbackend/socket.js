@@ -4,10 +4,11 @@ import Response from "./models/Response.js";
 import Message from "./models/Message.js";
 
 const connectedStudents = {}; // socket.id => name mapping
-
+console.log("run.....")
 // Get updated list of students after kicking
 async function getUpdatedList() {
     const students = await Student.find({ isKicked: false });
+    console.log("socket.js run hua backend ka...")
     return students.map(s => s.name);
 }
 
@@ -42,6 +43,7 @@ export default function socketHandler(socket, io) {
     // Real-time chat
     socket.on("chat:message", async ({ sender, text }) => {
         if (sender != 'Teacher') {
+            console.log("chala...")
             const student = await Student.findOne({ name: sender });
 
             if (!student || student.isKicked) return;
@@ -164,5 +166,10 @@ export default function socketHandler(socket, io) {
         await Student.deleteOne({ socketId: socket.id });
         delete connectedStudents[socket.id];
         io.emit("participants:update", Object.values(connectedStudents));
+    });
+
+     socket.on("get_current_poll", async () => {
+        const latestPoll = await Poll.findOne().sort({ createdAt: -1 });
+        if (latestPoll) io.to(socket.id).emit("poll-started", latestPoll);
     });
 }
