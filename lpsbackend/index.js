@@ -14,6 +14,7 @@ const app = express();
 const server = http.createServer(app);
 
 // upgrade the server to websocket
+const FRONTEND_URL = process.env.FRONTEND_URL || '*';
 const io = new Server(server, {
   cors: {
     origin: '*',
